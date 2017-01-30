@@ -74,7 +74,7 @@ public final class MailSaver extends Observable {
 		model.setEmailStr(mailContent);
 
 		synchronized (getLock()) {
-			String filePath = saveEmailToFile(mailContent);
+			String filePath = saveEmailToFile(mailContent, to);
 
 			model.setReceivedDate(new Date());
 			model.setFilePath(filePath);
@@ -148,18 +148,36 @@ public final class MailSaver extends Observable {
 		return sb.toString();
 	}
 
+
+    /**
+     * Saves the content of the email passed in parameters in a file.
+     *
+     * @param mailContent the content of the email to be saved.
+     * @return the path of the created file.
+     */
+    private String saveEmailToFile(String mailContent) {
+        return saveEmailToFile(mailContent, null);
+    }
+
 	/**
 	 * Saves the content of the email passed in parameters in a file.
 	 *
 	 * @param mailContent the content of the email to be saved.
+     * @param mailTo the destination address of the email
 	 * @return the path of the created file.
 	 */
-	private String saveEmailToFile(String mailContent) {
+	private String saveEmailToFile(String mailContent, String mailTo) {
 		if (ArgsHandler.INSTANCE.memoryModeEnabled()) {
 			return null;
 		}
-		String filePath = String.format("%s%s%s", UIModel.INSTANCE.getSavePath(), File.separator,
-				dateFormat.format(new Date()));
+        String filePath;
+		if (mailTo == null) {
+            filePath = String.format("%s%s%s", UIModel.INSTANCE.getSavePath(), File.separator,
+                    dateFormat.format(new Date()));
+        } else {
+            filePath = String.format("%s%s%s-%s", UIModel.INSTANCE.getSavePath(), File.separator,
+                    dateFormat.format(new Date()), mailTo.replace("@", "-"));
+        }
 
 		// Create file
 		int i = 0;
